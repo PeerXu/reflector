@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<body>
+<b>Screen</b>
+<pre id="screen" style="height: 100%; overflow:auto;">
+</pre>
+<input type="text" id="input" label="input"/>
+<button onclick="execute(); return false;">execute</button>
+<script>
+var $ = document;
+var $screen = $.getElementById("screen");
+var $input = $.getElementById("input");
+var ajaxReq = function(meth, url, data, callback) {
+  callback = callback || function(statusCode, textContent) {};
+  xhr = new XMLHttpRequest();
+  xhr.open(meth, url);
+  xhr.onreadystatechange = function() {
+    if(xhr.readyState==4) {
+      callback(xhr.status, xhr.responseText);
+    }
+  };
+  xhr.send(data);
+};
+function execute() {
+  cmd = $input.value;
+  $input.value = "";
+  ajaxReq("POST", "/emit", cmd);
+}
+function display() {
+  ajaxReq("GET", "/display", null, function(statusCode, responseText) {
+    output = "";
+    outputs = JSON.parse(responseText);
+    outputs.map(function(e) {
+      idx = e[0];
+      cmd = e[1];
+      result = e[2];
+      output += idx + " > " + cmd + "\n";
+      output += idx + " < " + result + "\n";
+    });
+    $screen.textContent = output;
+  });
+}
+setInterval("display()", 2000);
+</script>
+</body>
+</html>
